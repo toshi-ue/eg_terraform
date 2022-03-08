@@ -7,6 +7,7 @@ resource "aws_instance" "example" {
   # TYPE.NAME.ATTRIBUTEで参照できる
   vpc_security_group_ids = [aws_security_group.example_ec2.id]
 
+  # Apacheをインストール
   user_data = <<EOF
     #!/bin/bash
     yum install -y httpd
