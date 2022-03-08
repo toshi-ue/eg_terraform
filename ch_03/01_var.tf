@@ -15,7 +15,7 @@ variable "example_instance_type" {
 }
 
 resource "aws_instance" "example" {
-  ami = "ami-0c3fd0f5d33134a76"
   # 変数を参照(var.変数名で変数を参照できる)
+  ami           = "ami-0c3fd0f5d33134a76"
   instance_type = var.example_instance_type
 }
