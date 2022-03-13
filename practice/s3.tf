@@ -1,7 +1,6 @@
 // 実行するアカウント情報
 provider "aws" {
-  region  = "ap-northeast-1"
-  profile = "terraform"
+  region = "ap-northeast-1"
 }
 
 /*
@@ -40,7 +39,7 @@ resource "aws_s3_bucket" "private" {
     rule {
       # [aws_s3_bucket_server_side_encryption_configuration | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration#apply_server_side_encryption_by_default)
       apply_server_side_encryption_by_default {
-        sse_algorithm = "AE256"
+        sse_algorithm = "AES256"
       }
     }
   }
@@ -82,7 +81,7 @@ resource "aws_s3_bucket" "public" {
 
   # [aws_s3_bucket_cors_configuration | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_cors_configuration#cors_rule)
   cors_rule {
-    allowed_origins = "https://example.com"
+    allowed_origins = ["https://example.com"]
     allowed_methods = ["GET"]
     allowed_headers = ["*"]
     max_age_seconds = 3000
@@ -125,17 +124,17 @@ data "aws_iam_policy_document" "alb_log" {
     effect    = "Allow"
     actions   = ["s3:PutObject"]
     resources = ["arn:aws:s3:::${aws_s3_bucket.alb_log.id}/*"]
-  }
 
-  /*
-    ALBの場合は、AWSが管理しているアカウントから書き込む。
-    書き込みを行うアカウントID（582318560864）を指定する。
-    このアカウントIDはリージョンごとに異なる。
-    [Enable access logs for your Classic Load Balancer - Elastic Load Balancing](https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/classic/enable-access-logs.html#attach-bucket-policy)
-  */
-  principals {
-    type        = "AWS"
-    identifiers = ["582318560864"]
+    /*
+      ALBの場合は、AWSが管理しているアカウントから書き込む。
+      書き込みを行うアカウントID（582318560864）を指定する。
+      このアカウントIDはリージョンごとに異なる。
+      [Enable access logs for your Classic Load Balancer - Elastic Load Balancing](https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/classic/enable-access-logs.html#attach-bucket-policy)
+    */
+    principals {
+      type        = "AWS"
+      identifiers = ["582318560864"]
+    }
   }
 }
 
