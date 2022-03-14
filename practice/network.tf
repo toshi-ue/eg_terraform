@@ -8,6 +8,7 @@
 VPC (Virtual Private Cloud)
   他のネットワークから論理的に切り離されている仮想ネットワーク。
   EC2などのリソースはVPCに配置する。
+  [aws_vpc | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc)
 */
 resource "aws_vpc" "example" {
   /*
@@ -43,5 +44,34 @@ resource "aws_vpc" "example" {
     Name = "example"
   }
 }
+
+/*
+パブリックサブネット
+　VPCをさらに分割し、サブネットを作成する。
+  まずはインターネットからアクセス可能なパブリックサブネット
+  [aws_subnet | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet)
+*/
+resource "aws_subnet" "public" {
+  vpc_id = aws_vpc.example.id
+  /*
+    CIDRブロック
+    　サブネットは任意の単位で分割できる。
+      特にこだわりがなければ、VPCでは「/16」単位、サブネットでは「/24」単位にすると分かりやすい。
+  */
+  cidr_block = "10.0.0.0/24"
+  /*
+    パブリックIPアドレスの割り当て
+      map_public_ip_on_launchをtrueに設定すると、そのサブネットで起動したインスタンスにパブリックIPアドレスを自動的に割り当ててくれる。
+      便利なので、パブリックネットワークではtrueにしておく。
+  */
+  map_public_ip_on_launch = true
+  /*
+  アベイラビリティゾーン
+  　availability_zoneに、サブネットを作成するアベイラビリティゾーンを指定する。
+    アベイラビリティゾーンをまたがったサブネットは作成できない。
+  */
+  availability_zone = "ap-northeast-1a"
+}
+
 /*
 */
