@@ -98,6 +98,20 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.example.id
 }
 
+/*
+ルート
+　ルートは、ルートテーブルの1レコードに該当する。
+  以下はVPC以外への通信を、インターネットゲートウェイ経由でインターネットへデータを流すために、
+  デフォルトルート（0.0.0.0/0）をdestination_cidr_blockに指定する。
+  [aws_route | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route)
+*/
+resource "aws_route" "public" {
+  route_table_id         = aws_route_table.public.id
+  gateway_id             = aws_internet_gateway.example.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+
 
 /*
 */
