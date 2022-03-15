@@ -114,4 +114,16 @@ resource "aws_route" "public" {
 
 
 /*
+ルートテーブルの関連付け
+　どのルートテーブルを使ってルーティングするかは、サブネット単位で判断する。
+  そこでルートテーブルとサブネットを、リスト7.6のように関連付けます。
+  関連付けを忘れた場合、デフォルトルートテーブルが自動的に使われるが、
+  デフォルトルートテーブルの利用はアンチパターンのため、関連付けを忘れないようにする。
+*/
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+/*
 */
