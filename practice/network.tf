@@ -41,7 +41,7 @@ resource "aws_vpc" "example" {
     タグが設定できるリソースは、Nameタグを入れておく。
   */
   tags = {
-    Name = "example"
+    Name = "aws_vpc"
   }
 }
 
@@ -71,6 +71,17 @@ resource "aws_subnet" "public" {
     アベイラビリティゾーンをまたがったサブネットは作成できない。
   */
   availability_zone = "ap-northeast-1a"
+}
+
+/*
+インターネットゲートウェイ
+　VPCは隔離されたネットワークであり、単体ではインターネットと接続できない。
+  そこで、インターネットゲートウェイを作成し、VPCとインターネットの間で通信ができるようにする。
+  インターネットゲートウェイはVPCのIDを指定するだけでよい。
+  [aws_internet_gateway | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/internet_gateway)
+*/
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
 }
 
 /*
