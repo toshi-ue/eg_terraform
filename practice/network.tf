@@ -85,4 +85,19 @@ resource "aws_internet_gateway" "example" {
 }
 
 /*
+ルートテーブル
+　インターネットゲートウェイだけでは、まだインターネットと通信できない。
+  ネットワークにデータを流すため、ルーティング情報を管理するルートテーブルが必要になる。
+  [aws_route_table | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table)
+
+  ルートテーブルは少し特殊な仕様があるので注意が必要。
+  ルートテーブルでは、VPC内の通信を有効にするため、ローカルルートが自動的に作成される。
+  VPC内はこのローカルルートによりルーティングされ、ローカルルートは変更や削除ができず、Terraformからも制御できない。
+*/
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.example.id
+}
+
+
+/*
 */
