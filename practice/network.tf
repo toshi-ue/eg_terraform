@@ -153,4 +153,24 @@ resource "aws_subnet" "private" {
 }
 
 /*
+NATゲートウェイ
+  NAT (Network Address Translation)サーバーを導入すると、
+  プライベートネットワークからインターネットへアクセスできるようになる。
+  自力でも構築できるが、AWSではNATのマネージドサービスとして、
+  NATゲートウェイが提供されている。
+
+EIP
+  NATゲートウェイにはEIP (Elastic IP Address)が必要。
+  EIPは静的なパブリックIPアドレスを付与するサービス。
+  AWSでは、インスタンスを起動するたびに異なるIPアドレスが動的に割り当てられる。
+  しかしEIPを使うと、パブリックIPアドレスを固定できる。
+  [aws_eip | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip)
+*/
+resource "aws_eip" "nat_gateway" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.example]
+}
+
+
+/*
 */
