@@ -191,4 +191,19 @@ resource "aws_nat_gateway" "example" {
 }
 
 /*
+ルート
+  プライベートネットワークからインターネットへ通信するために、ルートを定義する。
+  プライベートサブネットのルートテーブルに追加する。
+  デフォルトルートをdestination_cidr_blockに指定し、
+  NATゲートウェイにルーティングするよう設定する。
+*/
+resource "aws_route" "private" {
+  route_table_id = aws_route_table.private.id
+  nat_gateway_id = aws_nat_gateway.example.id
+  # デフォルトルート（0.0.0.0/0）を設定し、NATゲートウェイにルーティングするよう設定する
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+
+/*
 */
