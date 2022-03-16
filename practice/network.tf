@@ -126,4 +126,18 @@ resource "aws_route_table_association" "public" {
 }
 
 /*
+プライベートネットワーク
+　インターネットから隔離されたネットワーク。
+  データベースサーバーのような、インターネットからアクセスしないリソースを配置する。
+　システムをセキュアにするため、パブリックネットワークには必要最小限のリソースのみ配置して、
+  それ以外はプライベートネットワークに置くのが定石。
+*/
+resource "aws_subnet" "private" {
+  vpc_id                  = aws_vpc.example.id
+  cidr_block              = "10.0.64.0/24"
+  availability_zone       = "ap-northeast-1a"
+  map_public_ip_on_launch = false
+}
+
+/*
 */
