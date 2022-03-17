@@ -51,14 +51,15 @@ resource "aws_vpc" "example" {
   まずはインターネットからアクセス可能なパブリックサブネット
   [aws_subnet | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet)
 */
-resource "aws_subnet" "public" {
+# パブリックネットワークのマルチAZ化
+resource "aws_subnet" "public_1a" {
   vpc_id = aws_vpc.example.id
   /*
     CIDRブロック
     　サブネットは任意の単位で分割できる。
       特にこだわりがなければ、VPCでは「/16」単位、サブネットでは「/24」単位にすると分かりやすい。
   */
-  cidr_block = "10.0.0.0/24"
+  cidr_block = "10.0.1.0/24"
   /*
     パブリックIPアドレスの割り当て
       map_public_ip_on_launchをtrueに設定すると、そのサブネットで起動したインスタンスにパブリックIPアドレスを自動的に割り当ててくれる。
@@ -71,6 +72,21 @@ resource "aws_subnet" "public" {
     アベイラビリティゾーンをまたがったサブネットは作成できない。
   */
   availability_zone = "ap-northeast-1a"
+
+  tags = {
+    Name = "eg_terraform_public_subnet_1a"
+  }
+}
+
+resource "aws_subnet" "public_1c" {
+  vpc_id                  = aws_vpc.example.id
+  cidr_block              = "10.0.2.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "ap-northeast-1 c"
+
+  tags = {
+    Name = "eg_terraform_public_subnet_1c"
+  }
 }
 
 /*
