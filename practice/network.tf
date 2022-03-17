@@ -195,12 +195,16 @@ EIP
   しかしEIPを使うと、パブリックIPアドレスを固定できる。
   [aws_eip | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip)
 */
-resource "aws_eip" "nat_gateway" {
+# NATゲートウェイのマルチAZ化
+resource "aws_eip" "nat_gateway_0" {
   vpc        = true
   depends_on = [aws_internet_gateway.example]
 }
 
-
+resource "aws_eip" "nat_gateway_1" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.example]
+}
 /*
 NATゲートウェイ
   NATゲートウェイは、リスト7.10のように定義します。
@@ -208,17 +212,27 @@ NATゲートウェイ
   指定するのは、プライベートサブネットではないので間違えないようにしましょう。
   [aws_nat_gateway | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/nat_gateway)
 */
-resource "aws_nat_gateway" "example" {
+resource "aws_nat_gateway" "nat_gateway_0" {
   # aws_eipで作成したEIPを指定する。
-  allocation_id = aws_eip.nat_gateway.id
+  allocation_id = aws_eip.nat_gateway_0.id
   # NATゲートウェイを配置するパブリックサブネットをsubnet_idに指定。
   #   指定するのは、プライベートサブネットではないことに注意。
-  subnet_id = aws_subnet.public.id
+  subnet_id = aws_subnet.public_0.id
   # 暗黙的にインターネットゲートウェイに依存しているため、インターネットゲートウェイ作成後に作成するように保証する
   # 初めて使用するリソースはTerraformのドキュメントを確認しdepends_onが必要かどうか確認すること
   depends_on = [aws_internet_gateway.example]
 }
 
+resource "aws_nat_gateway" "nat_gateway_1" {
+  # aws_eipで作成したEIPを指定する。
+  allocation_id = aws_eip.nat_gateway_1.id
+  # NATゲートウェイを配置するパブリックサブネットをsubnet_idに指定。
+  #   指定するのは、プライベートサブネットではないことに注意。
+  subnet_id = aws_subnet.public_1.id
+  # 暗黙的にインターネットゲートウェイに依存しているため、インターネットゲートウェイ作成後に作成するように保証する
+  # 初めて使用するリソースはTerraformのドキュメントを確認しdepends_onが必要かどうか確認すること
+  depends_on = [aws_internet_gateway.example]
+}
 /*
 ルート
   プライベートネットワークからインターネットへ通信するために、ルートを定義する。
