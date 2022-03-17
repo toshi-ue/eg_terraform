@@ -136,8 +136,14 @@ resource "aws_route" "public" {
   関連付けを忘れた場合、デフォルトルートテーブルが自動的に使われるが、
   デフォルトルートテーブルの利用はアンチパターンのため、関連付けを忘れないようにする。
 */
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
+# パブリックサブネット、ルートテーブルの関連付けをマルチAZ化
+resource "aws_route_table_association" "public_0" {
+  subnet_id      = aws_subnet.public_0.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public_1" {
+  subnet_id      = aws_subnet.public_1.id
   route_table_id = aws_route_table.public.id
 }
 
