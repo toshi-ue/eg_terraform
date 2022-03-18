@@ -261,5 +261,59 @@ resource "aws_route" "private_1" {
   # デフォルトルート（0.0.0.0/0）を設定し、NATゲートウェイにルーティングするよう設定する
   destination_cidr_block = "0.0.0.0/0"
 }
+
+/*
+ファイアウォール
+  AWSのファイアウォールには、サブネットレベルで動作する「ネットワークACL」とインスタンスレベルで動作する「セキュリティグループ」がある。
+セキュリティグループ
+  セキュリティグループを使うと、OSへ到達する前にネットワークレベルでパケットをフィルタリングできる。
+  EC2やRDSなど、さまざまなリソースに設定可能になる。
+　セキュリティグループルールもaws_security_groupリソースで定義しているが、独立したリソースとして定義することもできる。
+  ここでは、別々に実装する。
+  まずは、セキュリティグループ本体をリスト7.17のように定義します。
+  [aws_security_group | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group)
+*/
+# セキュリティグループの定義
+resource "aws_security_group" "example" {
+  name   = "example"
+  vpc_id = aws_vpc.example.id
+}
+
+/*
+セキュリティグループルール（インバウンド）
+  typeが「ingress」の場合、インバウンドルールになる。
+  以下ではHTTPで通信できるよう80番ポートを許可する。
+  [aws_security_group_rule | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule)
+*/
+# セキュリティグループ（インバウンド）の定義
+resource "aws_security_group_rule" "ingress_example" {
+  type              = "ingress"
+  from_port         = "80"
+  to_port           = "80"
+  protocol          = "tcp"
+  cidr_block        = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.example.id
+}
+
+/*
+セキュリティグループルール（アウトバウンド）
+　typeが「egress」の場合、アウトバウンドルールになる。
+  以下では、すべての通信を許可する設定をしてしている。
+*/
+# セキュリティグループ（インバウンド）の定義
+resource "aws_security_group_rule" "egress_example" {
+  type      = "egress"
+  from_port = 0
+  to_port   = 0
+  # –1 を指定するとすべてのタイプのトラフィックが許可される
+    # https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/security-group-rules-reference.html#sg-rules-other-instances
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  /*
+  */
+
+  security_group_id = aws_security_group.example.id
+}
+
 /*
 */
