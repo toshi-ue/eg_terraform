@@ -41,14 +41,14 @@ resource "aws_lb" "example" {
   s3.tf で作成したS3バケットを指定する。
 */
   access_logs {
-    bucket  = aws_s3_bucket.alb_log.id
-    enabled = true
+    bucket        = aws_s3_bucket.alb_log.id
+    enabled       = true
   }
 
-  security_groupts = [
+  security_groups = [
     module.http_sg.security_group_id,
     module.https_sg.security_group_id,
-    module.http_redirect_sg.security_group.id,
+    module.http_redirect_sg.security_group_id,
   ]
 }
 
@@ -62,7 +62,7 @@ output "alb_dns_name" {
   security_groupsに、これらのセキュリティグループを設定する。
 */
 module "http_sg" {
-  # security_groupフォルダの設定を参照
+  # security_groupフォルダの設定を参照(?)
   source = "./security_group"
   name   = "http-sg"
   vpc_id = aws_vpc.example.id
@@ -82,7 +82,7 @@ module "https_sg" {
 
 module "http_redirect_sg" {
   source = "./security_group"
-  name   = "https-redirect-sg"
+  name   = "http-redirect-sg"
   vpc_id = aws_vpc.example.id
   # HTTPのリダイレクトで使用するポート番号
   port        = 8080
@@ -125,9 +125,9 @@ resource "aws_lb_listener" "http" {
     type = "fixed-response"
 
     fixed_response {
-      contencontent_type = "text/plain"
-      message_body       = "これは HTTP です"
-      status_code        = "200"
+      content_type = "text/plain"
+      message_body = "これは HTTP です"
+      status_code  = "200"
     }
   }
 }
