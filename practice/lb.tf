@@ -22,7 +22,8 @@ resource "aws_lb" "example" {
   idle_timeout = 60
   # 削除保護
   # trueにすると、削除保護が有効になる。本番環境では誤って削除しないよう、有効にしておく。
-  enable_deletion_protection = true
+  # テストするときには必要ないためコメントアウトする
+  # enable_deletion_protection = true
 
   /*
 サブネット
@@ -54,6 +55,42 @@ resource "aws_lb" "example" {
 output "alb_dns_name" {
   value = aws_lb.example.dns_name
 }
+
+/*
+セキュリティグループ
+  HTTPの80番ポートとHTTPSの443番ポートに加えて、HTTPのリダイレクトで使用する8080番ポートも許可する。
+  security_groupsに、これらのセキュリティグループを設定する。
+*/
+module "http_sg" {
+  # security_groupフォルダの設定を参照
+  source = "./security_group"
+  name = "http-sg"
+  vpc_id = aws_vpc.example.id
+  # HTTPのポート番号
+  port = 80
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+module "https_sg" {
+  source = "./security_group"
+  name = "https-sg"
+  vpc_id = aws_vpc.example.id
+  # HTTPのポート番号
+  port = 443
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+module "http_redirect_sg" {
+  source = "./security_group"
+  name = "https-redirect-sg"
+  vpc_id = aws_vpc.example.id
+  # HTTPのリダイレクトで使用するポート番号
+  port = 8080
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+
+
 
 /*
 */
