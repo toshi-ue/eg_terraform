@@ -64,30 +64,76 @@ output "alb_dns_name" {
 module "http_sg" {
   # security_groupフォルダの設定を参照
   source = "./security_group"
-  name = "http-sg"
+  name   = "http-sg"
   vpc_id = aws_vpc.example.id
   # HTTPのポート番号
-  port = 80
+  port        = 80
   cidr_blocks = ["0.0.0.0/0"]
 }
 
 module "https_sg" {
   source = "./security_group"
-  name = "https-sg"
+  name   = "https-sg"
   vpc_id = aws_vpc.example.id
   # HTTPのポート番号
-  port = 443
+  port        = 443
   cidr_blocks = ["0.0.0.0/0"]
 }
 
 module "http_redirect_sg" {
   source = "./security_group"
-  name = "https-redirect-sg"
+  name   = "https-redirect-sg"
   vpc_id = aws_vpc.example.id
   # HTTPのリダイレクトで使用するポート番号
-  port = 8080
+  port        = 8080
   cidr_blocks = ["0.0.0.0/0"]
 }
+
+/*
+リスナー
+  リスナーで、どのポートのリクエストを受け付けるか設定。
+  リスナーはALBに複数アタッチできる。
+  [aws_lb_listener | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener)
+*/
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.example.arn
+  /*
+  ポート番号
+    portには1～65535の値が設定できる。
+    HTTPなので「80」を指定。
+  */
+  port = "80"
+  /*
+  プロトコル
+  　ALBは「HTTP」と「HTTPS」のみサポートしている。
+    protocolで指定。
+  */
+  protocol = "HTTP"
+
+  /*
+デフォルトアクション
+　リスナーは複数のルールを設定して、異なるアクションを実行できる。
+  いずれのルールにも合致しない場合は、default_actionが実行される。
+  定義できるアクションにはいくつかある本書では3つ紹介します。
+　・forward ： リクエストを別のターゲットグループに転送
+　・fixed-response ： 固定のHTTPレスポンスを応答
+　・redirect ： 別のURLにリダイレクト
+  その他は[aws_lb_listener | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener#default_action)で確認できる
+　ここでは固定のHTTPレスポンスを設定している。
+*/
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      contencontent_type = "text/plain"
+      message_body       = "これは HTTP です"
+      status_code        = "200"
+    }
+  }
+}
+
+
+
 
 
 
