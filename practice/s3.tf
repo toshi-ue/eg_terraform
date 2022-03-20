@@ -95,7 +95,8 @@ resource "aws_s3_bucket" "public" {
 
 # ALBのアクセスログ用バケットの作成。
 resource "aws_s3_bucket" "alb_log" {
-  bucket = "alb-log-eg-terraform-terraform"
+  bucket        = "alb-log-eg-terraform-terraform"
+  force_destroy = true
 
   # daysで指定した日数を経過したファイルを自動的に削除し、無限にファイルが増えないようにする。
   # [aws_s3_bucket | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket#using-object-lifecycle)
