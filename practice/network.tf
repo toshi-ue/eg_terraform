@@ -52,7 +52,7 @@ resource "aws_vpc" "example" {
   [aws_subnet | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet)
 */
 # パブリックネットワークのマルチAZ化
-resource "aws_subnet" "public_1a" {
+resource "aws_subnet" "public_0" {
   vpc_id = aws_vpc.example.id
   /*
     CIDRブロック
@@ -78,11 +78,11 @@ resource "aws_subnet" "public_1a" {
   }
 }
 
-resource "aws_subnet" "public_1c" {
+resource "aws_subnet" "public_1" {
   vpc_id                  = aws_vpc.example.id
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = true
-  availability_zone       = "ap-northeast-1 c"
+  availability_zone       = "ap-northeast-1c"
 
   tags = {
     Name = "eg_terraform_public_subnet_1c"
@@ -291,7 +291,7 @@ resource "aws_security_group_rule" "ingress_example" {
   from_port         = "80"
   to_port           = "80"
   protocol          = "tcp"
-  cidr_block        = ["0.0.0.0/0"]
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.example.id
 }
 
@@ -306,9 +306,9 @@ resource "aws_security_group_rule" "egress_example" {
   from_port = 0
   to_port   = 0
   # –1 を指定するとすべてのタイプのトラフィックが許可される
-    # https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/security-group-rules-reference.html#sg-rules-other-instances
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
+  # https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/security-group-rules-reference.html#sg-rules-other-instances
+  protocol    = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
   /*
   */
 
