@@ -132,8 +132,36 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+/*
+Route 53
+  Route 53は、AWSが提供するDNS (Domain Name System)のサービス。
 
+  ドメインの登録
+    AWSマネジメントコンソールから次の手続きを行うと、ドメインの登録ができる。
+    １．ドメイン名の入力
+    ２．連絡先情報の入力
+    ３．登録メールアドレスの有効性検証
+    ドメインの登録は、Terraformでは実行できない。
+  ホストゾーン
+    DNSレコードを束ねるリソース。
+    Route 53でドメインを登録した場合は、自動的に作成される。
+    同時にNSレコードとSOAレコードも作成される。
+      NSレコード ：管理を委託しているDNSサーバの名前が書かれている行
+      SOAレコード：DNSで定義されるそのドメインについての情報の種類の１つで、ゾーンの管理のための情報や設定などを記述するためのもの
+    「example.com」を登録した前提でコードを記述する。
+  [aws_route53_zone | Data Sources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone)
+  [aws_route53_zone | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone)
+*/
+# ホストゾーンの参照
+# ホストゾーンのデータソースの定義
+data "aws_route53_zone" "example" {
+  name = "example.com"
+}
 
+# ホストゾーンの作成
+resource "aws_route53_zone" "test_example" {
+  name = "test.example.com"
+}
 
 
 
