@@ -163,7 +163,38 @@ resource "aws_route53_zone" "test_example" {
   name = "test.example.com"
 }
 
+/*
+DNSレコード
+  設定したドメインでALBへとアクセスできるようになる。
+*/
+resource "aws_route53_record" "example" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = data.aws_route53_zone.example.name
+  /*
+    DNSレコードタイプはtypeに設定。
+    AレコードやCNAMEレコードなど、一般的なレコードタイプが指定可能。
+    AWS独自拡張のALIASレコードを使用する場合は、Aレコードをあらわす「A」を指定する。
+  */
+  type    = "A"
 
+  /*
+    ALIASレコードは、AWSでのみ使用可能なDNSレコード。
+    DNSからみると、単なるAレコードという扱いになる。
+    Aレコード(ALIASレコード)は、AWSの各種サービスと統合されており、ALBだけでなくS3バケットやCloudFrontも指定できる。
+  　CNAMEレコードは「ドメイン名→CNAMEレコードのドメイン名→IPアドレス」という流れで名前解決を行う。
+    Aレコードは「ドメイン名→IPアドレス」という流れで名前解決が行われ、パフォーマンスが向上する。
+    aliasにALBのDNS名とゾーンIDを指定すると、ALBのIPアドレスへ名前解決できるようになります。
+  */
+  alias {
+    name                   = aws_lb.example.dns_name
+    zone_id                = aws_lb.example.zone_id
+    evaluate_target_health = true
+  }
+}
+
+output "donmain_name" {
+  value = aws_route53_record.example.name
+}
 
 
 /*
