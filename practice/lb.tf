@@ -41,8 +41,8 @@ resource "aws_lb" "example" {
   s3.tf で作成したS3バケットを指定する。
 */
   access_logs {
-    bucket        = aws_s3_bucket.alb_log.id
-    enabled       = true
+    bucket  = aws_s3_bucket.alb_log.id
+    enabled = true
   }
 
   security_groups = [
