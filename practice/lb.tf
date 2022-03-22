@@ -205,6 +205,7 @@ ACM（AWS Certificate Manager）
   SSL証明書の自動更新ができるため「証明書の更新忘れた！」という幾度となく人類が繰り返してきた悲劇から解放される。
   [aws_acm_certificate | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate)
 */
+# SSL証明書の定義
 resource "aws_acm_certificate" "example" {
   /*
     「*.example.com」のように指定すると、ワイルドカード証明書を発行できる。
@@ -229,10 +230,30 @@ resource "aws_acm_certificate" "example" {
     通常のリソースの再作成は「リソースの削除をしてから、リソースを作成する」という挙動になる。
     しかし、create_before_destroyをtrueにすると、「リソースを作成してから、リソースを削除する」という逆の挙動に変更できる。
   */
-  lifecycle{
+  lifecycle {
     create_before_destroy = true
   }
 }
+
+
+/*
+SSL証明書の検証
+  DNSによる、SSL証明書の検証もTerraformで実装できる。
+  DNS検証用のDNSレコードを追加する。
+  subject_alternative_namesにドメインを追加した場合、そのドメイン用のDNSレコードも必要になるので注意が必要。
+  [aws_route53_record | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record)
+*/
+# SSL証明書の検証
+resource "aws_route53_record" "example_certificate" {
+  name    = aws_acm_certificate.example.domain_validation_options[0].resource_record_name
+  type    = aws_acm_certificate.example.domain_validation_options[0].resource_record_type
+  records = [aws_acm_certificate.example.domain_validation_options[0].resource_record_value]
+  zone_id = data.aws_route53_zone.example.id
+  ttl     = 60
+}
+
+
+
 
 
 /*
