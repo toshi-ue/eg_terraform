@@ -155,11 +155,13 @@ Route 53
 # ホストゾーンの参照
 # ホストゾーンのデータソースの定義
 data "aws_route53_zone" "example" {
+  # TODO: 変更してapplyを試す
   name = "example.com"
 }
 
 # ホストゾーンの作成
 resource "aws_route53_zone" "test_example" {
+  # TODO: 変更してapplyを試す
   name = "test.example.com"
 }
 
@@ -175,7 +177,7 @@ resource "aws_route53_record" "example" {
     AレコードやCNAMEレコードなど、一般的なレコードタイプが指定可能。
     AWS独自拡張のALIASレコードを使用する場合は、Aレコードをあらわす「A」を指定する。
   */
-  type    = "A"
+  type = "A"
 
   /*
     ALIASレコードは、AWSでのみ使用可能なDNSレコード。
