@@ -198,6 +198,42 @@ output "donmain_name" {
   value = aws_route53_record.example.name
 }
 
+/*
+ACM（AWS Certificate Manager）
+  HTTPS化するために必要なSSL証明書を、ACM (AWS Certificate Manager)で作成する。
+  ACMは煩雑なSSL証明書の管理を担ってくれるマネージドサービスで、ドメイン検証をサポートしている。
+  SSL証明書の自動更新ができるため「証明書の更新忘れた！」という幾度となく人類が繰り返してきた悲劇から解放される。
+  [aws_acm_certificate | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate)
+*/
+resource "aws_acm_certificate" "example" {
+  /*
+    「*.example.com」のように指定すると、ワイルドカード証明書を発行できる。
+  */
+  domain_name = aws_route53_record.example.name
+  /*
+    ドメイン名を追加したい場合、subject_alternative_namesを設定する。
+    たとえば["test.example.com"]と指定すると、「example.com」と「test.example.com」のSSL証明書を作成する。
+    追加しない場合は、空リストを渡す。
+  */
+  subject_alternative_names = []
+  /*
+    ドメインの所有権の検証方法を、validation_methodで設定する。
+    DNS検証かEメール検証を選択できる。
+    SSL証明書を自動更新したい場合、DNS検証を選択する。
+  */
+  validation_method = "DNS"
+
+  /*
+    lifecycle定義で「新しいSSL証明書を作ってから、古いSSL証明書と差し替える」という挙動に変更し、SSL証明書の再作成時のサービス影響を最小化する。
+    ライフサイクルはTerraform独自の機能で、すべてのリソースに設定可能。
+    通常のリソースの再作成は「リソースの削除をしてから、リソースを作成する」という挙動になる。
+    しかし、create_before_destroyをtrueにすると、「リソースを作成してから、リソースを削除する」という逆の挙動に変更できる。
+  */
+  lifecycle{
+    create_before_destroy = true
+  }
+}
+
 
 /*
 */
