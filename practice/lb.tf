@@ -252,7 +252,16 @@ resource "aws_route53_record" "example_certificate" {
   ttl     = 60
 }
 
-
+/*
+検証の待機
+  apply時にSSL証明書の検証が完了するまで待ってくれる。
+  実際になにかのリソースを作るわけではない。
+*/
+# SSL証明書の検証完了まで待機
+resource "aws_acm_certificate_validation" "example"{
+  certificate_arn = aws_acm_certificate.example.arn
+  validation_record_fqdns = [aws_route53_record.example_certificate.fqdn]
+}
 
 
 
