@@ -156,13 +156,13 @@ Route 53
 # ホストゾーンのデータソースの定義
 data "aws_route53_zone" "example" {
   # TODO: 変更してapplyを試す
-  name = "example.com"
+  name = "eg-terraform-geawc.tk"
 }
 
 # ホストゾーンの作成
 resource "aws_route53_zone" "test_example" {
   # TODO: 変更してapplyを試す
-  name = "test.example.com"
+  name = "test.eg-terraform-geawc.tk"
 }
 
 /*
@@ -258,8 +258,8 @@ resource "aws_route53_record" "example_certificate" {
   実際になにかのリソースを作るわけではない。
 */
 # SSL証明書の検証完了まで待機
-resource "aws_acm_certificate_validation" "example"{
-  certificate_arn = aws_acm_certificate.example.arn
+resource "aws_acm_certificate_validation" "example" {
+  certificate_arn         = aws_acm_certificate.example.arn
   validation_record_fqdns = [aws_route53_record.example_certificate.fqdn]
 }
 
