@@ -279,4 +279,32 @@ resource "aws_acm_certificate_validation" "example" {
 }
 
 /*
+HTTPS用ロードバランサー
+  SSL証明書を発行したあとに、
+  HTTPSでALBにアクセスできるようHTTPSリスナーを作成する。
+*/
+# HTTPSリスナーの定義
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.example.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  # 定義したSSL証明書を指定
+  certificate_arn = aws_acm_certificate.example.arn
+  # セキュリティーポリシーの設定
+  # [Application Load Balancer 用の HTTPS リスナーを作成する - Elastic Load Balancing](https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
+  ssl_policy = "ELBSecurityPolicy-2016-08"
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "これはHTTPSです2"
+      status_code  = "200"
+    }
+  }
+}
+
+
+/*
 */
