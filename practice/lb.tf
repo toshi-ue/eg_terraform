@@ -305,6 +305,29 @@ resource "aws_lb_listener" "https" {
   }
 }
 
+/*
+HTTPのリダイレクト
+  HTTPをHTTPSへリダイレクトするために、リダイレクトリスナーを作成する。
+  default_actionでredirectの設定をするだけ。
+*/
+# HTTPからHTTPSにリダイレクトするリスナーの定義
+resource "aws_lb_listener" "redirect_http_to_https" {
+  load_balancer_arn = aws_lb.example.arn
+  port = "8080"
+  protocol ="HTTP"
+
+  default_action{
+    type = "redirect"
+
+    redirect { 
+      port = "443"
+      protocol  ="HTTPS"
+      status_code ="HTTP_301"
+    }
+  }
+}
+
+
 
 /*
 */
