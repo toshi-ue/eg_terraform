@@ -303,6 +303,12 @@ resource "aws_lb_listener" "https" {
       status_code  = "200"
     }
   }
+
+  # 以下を追加しないとエラーが発生してapplyされない
+  # [TerraformでDNSレコード,ACM証明書,ALBをプロビジョニングする際に入れておいたほうが良いコード | DevelopersIO](https://dev.classmethod.jp/articles/dnsrecord-acm-alb-with-terraform/#toc-3)
+  depends_on = [
+    aws_acm_certificate_validation.example
+  ]
 }
 
 /*
@@ -313,16 +319,16 @@ HTTPのリダイレクト
 # HTTPからHTTPSにリダイレクトするリスナーの定義
 resource "aws_lb_listener" "redirect_http_to_https" {
   load_balancer_arn = aws_lb.example.arn
-  port = "8080"
-  protocol ="HTTP"
+  port              = "8080"
+  protocol          = "HTTP"
 
-  default_action{
+  default_action {
     type = "redirect"
 
-    redirect { 
-      port = "443"
-      protocol  ="HTTPS"
-      status_code ="HTTP_301"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
     }
   }
 }
