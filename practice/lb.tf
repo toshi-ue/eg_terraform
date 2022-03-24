@@ -156,13 +156,13 @@ Route 53
 # ホストゾーンのデータソースの定義
 data "aws_route53_zone" "example" {
   # TODO: 変更してapplyを試す
-  name = "eg-terraform-geawc.tk"
+  name = "medcoolapp.com"
 }
 
 # ホストゾーンの作成
 resource "aws_route53_zone" "test_example" {
   # TODO: 変更してapplyを試す
-  name = "test.eg-terraform-geawc.tk"
+  name = "test.medcoolapp.com"
 }
 
 /*
@@ -245,11 +245,25 @@ SSL証明書の検証
 */
 # SSL証明書の検証
 resource "aws_route53_record" "example_certificate" {
-  name    = aws_acm_certificate.example.domain_validation_options[0].resource_record_name
-  type    = aws_acm_certificate.example.domain_validation_options[0].resource_record_type
-  records = [aws_acm_certificate.example.domain_validation_options[0].resource_record_value]
-  zone_id = data.aws_route53_zone.example.id
-  ttl     = 60
+  # AWS Provider 3.0.0以降では
+  #   This value does not have any indices.(Error: Invalid index) が発生するためコメントアウト
+  # [Terraform で AWS Certificate Manager 無料証明書を発行する（AWS Provider 3.0.0 以降の場合） | DevelopersIO](https://dev.classmethod.jp/articles/terraform-aws-certificate-validation/)
+  # name    = aws_acm_certificate.example.domain_validation_options[0].resource_record_name
+  # type    = aws_acm_certificate.example.domain_validation_options[0].resource_record_type
+  # records = [aws_acm_certificate.example.domain_validation_options[0].resource_record_value]
+  for_each = {
+    for dvo in aws_acm_certificate.example.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+  allow_overwrite = true
+  name            = each.value.name
+  type            = each.value.type
+  records         = [each.value.record]
+  zone_id         = data.aws_route53_zone.example.id
+  ttl             = 60
 }
 
 /*
@@ -259,11 +273,10 @@ resource "aws_route53_record" "example_certificate" {
 */
 # SSL証明書の検証完了まで待機
 resource "aws_acm_certificate_validation" "example" {
-  certificate_arn         = aws_acm_certificate.example.arn
-  validation_record_fqdns = [aws_route53_record.example_certificate.fqdn]
+  certificate_arn = aws_acm_certificate.example.arn
+  # validation_record_fqdns = [aws_route53_record.example_certificate.fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.example_certificate : record.fqdn]
 }
-
-
 
 /*
 */
