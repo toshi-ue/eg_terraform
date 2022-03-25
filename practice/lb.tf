@@ -22,8 +22,9 @@ resource "aws_lb" "example" {
   idle_timeout = 60
   # 削除保護
   # trueにすると、削除保護が有効になる。本番環境では誤って削除しないよう、有効にしておく。
-  # テストするときには必要ないためコメントアウトする
+  # テストするときには必要ないためコメントアウト or falseする
   # enable_deletion_protection = true
+  enable_deletion_protection = false
 
   /*
 サブネット
@@ -422,9 +423,12 @@ resource "aws_lb_listener_rule" "example" {
   # 条件
   #   conditionには、「/img/*」のようなパスベースや「example.com」のようなホストベースなどで、条件を指定できる。
   # 「/*」はすべてのパスでマッチする。
+  # 書籍のままでやるとエラーになるのでドキュメントをちゃんと参照すること
+  #   https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule#example-usage
   condition {
-    field  = "path-pattern"
-    values = ["/*"]
+    path-pattern {
+      values = ["/*"]
+    }
   }
 }
 
