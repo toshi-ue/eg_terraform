@@ -333,6 +333,62 @@ resource "aws_lb_listener" "redirect_http_to_https" {
   }
 }
 
+/*
+リクエストフォワーディング
+  任意のターゲットへ、リクエストをフォワードできるようする。
+ターゲットグループ
+  ALBがリクエストをフォワードする対象を「ターゲットグループ」と呼ぶ。
+  このターゲットグループは、ECSサービスと関連付ける。
+*/
+# ターゲットグループの定義
+resource "aws_lb_target_group" "example" {
+  name = "example"
+  /*
+  ターゲットタイプ
+    ターゲットの種類をtarget_typeで設定する。
+    EC2インスタンスやIPアドレス、Lambda関数などが指定できる。
+    ECS Fargateでは「ip」を指定する。
+  */
+  target_type = "ip"
+  /*
+    ルーティング先
+      ターゲットグループにipを指定した場合はさらに、vpc_id・port・protocolを設定する。
+      多くの場合、HTTPSの終端はALBで行うため、protocolには「HTTP」を指定することが多い。
+  */
+  vpc_id = aws_vpc.example.id
+  port = 80
+  protocol = "HTTP"
+  /*
+    登録解除の待機時間
+      ターゲットの登録を解除する前に、ALBが待機する時間をderegistration_delayで設定する。
+      秒単位で指定し、デフォルト値は300秒。
+  */
+  deregistration_deley = 300
+  health_check{
+    # ヘルスチェックで使用するパス
+    path = "/"
+    # 正常判定を行うまでのヘルスチェック実行回数
+    healthy_threshold = 5
+    # 異常判定を行うまでのヘルスチェック実行回数
+    unhealthy_threshold = 2
+    # ヘルスチェックのタイムアウト時間（秒）
+    timeout = 5
+    # ヘルスチェックの実行間隔（秒）
+    interval = 30
+    # 正常判定を行うために使用するHTTPステータスコード
+    matcher = 200
+    # ヘルスチェックで使用するポート
+    # health_checkのportを traffic-port と指定した場合、aws_lb_target_group.example.port で指定したポート番号が使われる。
+    port = "traffic-port"
+    # ヘルスチェック時に使用するプロトコル
+  
+    protocol = "HTTP"
+  }
+  # 暗黙的な依存関係
+    # アプリケーションロードバランサーとターゲットグループを、ECSサービスと同時に作成するとエラーになる。
+    # そのため、depends_onで依存関係を制御するワークアラウンドを追加し、エラーを回避する。
+  depends_on = [aws_lb.example]
+}
 
 
 /*
