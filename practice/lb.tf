@@ -245,6 +245,10 @@ SSL証明書の検証
 */
 # SSL証明書の検証
 resource "aws_route53_record" "example_certificate" {
+  # こちらを参考に書き換え
+  #           https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation#example-usage
+  #       アップグレードガイドには以下のようにしろとも書かれている
+  #           https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/version-3-upgrade#domain_validation_options-changed-from-list-to-set
   # AWS Provider 3.0.0以降では
   #   This value does not have any indices.(Error: Invalid index) が発生するためコメントアウト
   # [Terraform で AWS Certificate Manager 無料証明書を発行する（AWS Provider 3.0.0 以降の場合） | DevelopersIO](https://dev.classmethod.jp/articles/terraform-aws-certificate-validation/)
@@ -355,8 +359,8 @@ resource "aws_lb_target_group" "example" {
       ターゲットグループにipを指定した場合はさらに、vpc_id・port・protocolを設定する。
       多くの場合、HTTPSの終端はALBで行うため、protocolには「HTTP」を指定することが多い。
   */
-  vpc_id = aws_vpc.example.id
-  port = 80
+  vpc_id   = aws_vpc.example.id
+  port     = 80
   protocol = "HTTP"
   /*
     登録解除の待機時間
@@ -364,7 +368,7 @@ resource "aws_lb_target_group" "example" {
       秒単位で指定し、デフォルト値は300秒。
   */
   deregistration_deley = 300
-  health_check{
+  health_check {
     # ヘルスチェックで使用するパス
     path = "/"
     # 正常判定を行うまでのヘルスチェック実行回数
@@ -381,14 +385,53 @@ resource "aws_lb_target_group" "example" {
     # health_checkのportを traffic-port と指定した場合、aws_lb_target_group.example.port で指定したポート番号が使われる。
     port = "traffic-port"
     # ヘルスチェック時に使用するプロトコル
-  
+
     protocol = "HTTP"
   }
   # 暗黙的な依存関係
-    # アプリケーションロードバランサーとターゲットグループを、ECSサービスと同時に作成するとエラーになる。
-    # そのため、depends_onで依存関係を制御するワークアラウンドを追加し、エラーを回避する。
+  # アプリケーションロードバランサーとターゲットグループを、ECSサービスと同時に作成するとエラーになる。
+  # そのため、depends_onで依存関係を制御するワークアラウンドを追加し、エラーを回避する。
   depends_on = [aws_lb.example]
 }
+
+/*
+リスナールール
+  ターゲットグループにリクエストをフォワードするリスナールールを作成
+*/
+# リスナールールの定義
+resource "aws_lb_listener_rule" "example" {
+  listener_arn = aws_lb_listener.https.arn
+  /*
+    優先順位
+      リスナールールは複数定義でき、優先順位をpriorityで設定する。
+      数字が小さいほど、優先順位が高い。
+      なお、デフォルトルールはもっとも優先順位が低い。
+  */
+  priority = 100
+
+
+  /*
+    actionで、フォワード先のターゲットグループを設定する。
+    この設定でターゲットグループへひもづけされる
+  */
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.example.arn
+  }
+
+  # 条件
+  #   conditionには、「/img/*」のようなパスベースや「example.com」のようなホストベースなどで、条件を指定できる。
+  # 「/*」はすべてのパスでマッチする。
+  condition {
+    field  = "path-pattern"
+    values = ["/*"]
+  }
+}
+
+
+
+
+
 
 
 /*
