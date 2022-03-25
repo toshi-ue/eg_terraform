@@ -277,6 +277,7 @@ resource "aws_route53_record" "example_certificate" {
   実際になにかのリソースを作るわけではない。
 */
 # SSL証明書の検証完了まで待機
+# [aws_acm_certificate_validation | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation)
 resource "aws_acm_certificate_validation" "example" {
   certificate_arn = aws_acm_certificate.example.arn
   # validation_record_fqdns = [aws_route53_record.example_certificate.fqdn]
@@ -289,6 +290,7 @@ HTTPS用ロードバランサー
   HTTPSでALBにアクセスできるようHTTPSリスナーを作成する。
 */
 # HTTPSリスナーの定義
+# [aws_lb_listener | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener)
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.example.arn
   port              = "443"
@@ -322,6 +324,7 @@ HTTPのリダイレクト
   default_actionでredirectの設定をするだけ。
 */
 # HTTPからHTTPSにリダイレクトするリスナーの定義
+# [aws_lb_listener | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener)
 resource "aws_lb_listener" "redirect_http_to_https" {
   load_balancer_arn = aws_lb.example.arn
   port              = "8080"
@@ -346,6 +349,7 @@ resource "aws_lb_listener" "redirect_http_to_https" {
   このターゲットグループは、ECSサービスと関連付ける。
 */
 # ターゲットグループの定義
+# [aws_lb_target_group | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group)
 resource "aws_lb_target_group" "example" {
   name = "example"
   /*
@@ -398,6 +402,7 @@ resource "aws_lb_target_group" "example" {
 /*
 リスナールール
   ターゲットグループにリクエストをフォワードするリスナールールを作成
+  [aws_lb_listener_rule | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule)
 */
 # リスナールールの定義
 resource "aws_lb_listener_rule" "example" {
