@@ -5,6 +5,9 @@ Webサーバーの構築
 ECSクラスタ
   ECSクラスタは、Dockerコンテナを実行するホストサーバーを、論理的に束ねるリソースのこと。
   クラスタ名を指定するだけ。
+
+正常に設定ができているかどう確認するには
+terraform applyを実行した後で以下にアクセス。nginxのデフォルト画面が表示されればok
 */
 # ECSクラスタの定義
 # [aws_ecs_cluster | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster)
@@ -58,7 +61,86 @@ resource "aws_ecs_task_definition" "example" {
 }
 
 
+/*
+ECSサービス
+  通常、コンテナを起動しても、処理が完了したらすぐに終了します。もちろん、Webサービスでそれは困るため、「ECSサービス」を使う。
+  ECSサービスは起動するタスクの数を定義でき、指定した数のタスクを維持する。
+  なんらかの理由でタスクが終了してしまった場合、自動的に新しいタスクを起動してくれる優れもの。
+  また、ECSサービスはALBとの橋渡し役にもなる。
+  インターネットからのリクエストはALBで受け、そのリクエストをコンテナにフォワードする。
+  [aws_ecs_service | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service)
+*/
+# ECSサービスの定義
+resource "aws_ecs_service" "example" {
+  name = "example"
+  # clusterには、resource "aws_ecs_cluster" "example" で作成したECSクラスタを設定する。
+  cluster = aws_ecs_cluster.example.arn
+  #   resource "aws_ecs_task_definition" "example" で作成したタスク定義を設定する。
+  task_definition = aws_ecs_task_definition.example.arn
+  # ECSサービスが維持するタスク数はdesired_countで指定する。
+  # 指定した数が1の場合、コンテナが異常終了すると、ECSサービスがタスクを再起動するまでアクセスできなくなる。
+  # そのため本番環境では2以上を指定する。
+  desired_count = 2
+  # 起動タイプ
+  # launch_typeには「FARGATE」を指定する。
+  launch_type = "FARGATE"
+  # プラットフォームバージョン
+  # platform_versionのデフォルトは「LATEST」。
+  # ただしLATESTはその名前に反して、最新のバージョンでない場合がある。
+  # これはAWSの公式ドキュメント2にも記載されている仕様。
+  #   [AWS Fargateプラットフォームのバージョン - Amazon Elastic Container Service](https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/platform_versions.html)
+  # よって、バージョンは明示的に指定し、LATESTの使用は避ける。
+  platform_version = "1.3.0"
+  # ヘルスチェック猶予期間
+  # health_check_grace_period_secondsに、タスク起動時のヘルスチェック猶予期間を設定する。
+  # 秒単位で指定し、デフォルトは0秒。
+  # タスクの起動に時間がかかる場合、十分な猶予期間を設定しておかないとヘルスチェックに引っかかり、
+  #   タスクの起動と終了が無限に続いてしまうため、0以上の値にする。
+  health_check_grace_period_seconds = 60
 
+  # ネットワーク構成
+  # network_configurationには、サブネットとセキュリティグループを設定する。
+  # あわせて、パブリックIPアドレスを割り当てるか設定する。
+  # resource "aws_ecs_service" "example" では、プライベートネットワークで起動するため、パブリックIPアドレスの割り当ては不要。
+  network_configuration {
+    assign_public_ip = false
+    security_groups  = [module.nginx_sg.security_group_id]
+
+    subnets = [
+      aws_subnet.private_0.id,
+      aws_subnet.private_1.id
+    ]
+  }
+
+  # ロードバランサー
+  # 　load_balancerでターゲットグループとコンテナの名前・ポート番号を指定し、ロードバランサーと関連付ける。
+  #   container_definition.json との関係は以下のようになる。
+  # 　・container_name ＝ コンテナ定義のname
+  # 　・container_port ＝ コンテナ定義のportMappings.containerPort
+  # 　なお、コンテナ定義に複数のコンテナがある場合は、最初にロードバランサーからリクエストを受け取るコンテナの値を指定する。
+  load_balancer {
+    target_group_arn = aws_lb_target_group.example.arn
+    container_name   = "example"
+    container_port   = 80
+  }
+
+  # ライフサイクル
+  # 　Fargateの場合、デプロイのたびにタスク定義が更新され、plan時に差分が出る。
+  #   よって、Terraformではタスク定義の変更を無視すべき。
+  # 　そこで、ignore_changesを設定する。
+  #   ignore_changesに指定したパラメータは、リソースの初回作成時を除き、変更を無視するようになる。
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
+}
+
+module "nginx_sg" {
+  source      = "./security_group"
+  name        = "nginx-sg"
+  vpc_id      = aws_vpc.example.id
+  port        = 80
+  cidr_blocks = [aws_vpc.example.cidr_block]
+}
 
 
 
