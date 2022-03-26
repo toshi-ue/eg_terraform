@@ -372,7 +372,7 @@ resource "aws_lb_target_group" "example" {
       ターゲットの登録を解除する前に、ALBが待機する時間をderegistration_delayで設定する。
       秒単位で指定し、デフォルト値は300秒。
   */
-  deregistration_deley = 300
+  deregistration_delay = 300
   health_check {
     # ヘルスチェックで使用するパス
     path = "/"
@@ -431,7 +431,7 @@ resource "aws_lb_listener_rule" "example" {
   # 書籍のままでやるとエラーになるのでドキュメントをちゃんと参照すること
   #   https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule#example-usage
   condition {
-    path-pattern {
+    path_pattern {
       values = ["/*"]
     }
   }
