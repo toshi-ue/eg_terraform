@@ -7,7 +7,8 @@ ECSクラスタ
   クラスタ名を指定するだけ。
 
 正常に設定ができているかどう確認するには
-terraform applyを実行した後で以下にアクセス。nginxのデフォルト画面が表示されればok
+terraform applyを実行した後で。ブラウザから以下のアドレスにアクセスしてnginxのデフォルト画面が表示されればok
+https://medcoolapp.com
 */
 # ECSクラスタの定義
 # [aws_ecs_cluster | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster)
