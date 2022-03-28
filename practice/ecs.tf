@@ -160,7 +160,20 @@ resource "aws_cloudwatch_log_group" "for_ecs" {
   retention_in_days = 180
 }
 
+/*
+ECSタスク実行IAMロール
+  ECSに権限を付与するため、ECSタスク実行IAMロールを作成する。
+IAMポリシーデータソース
+  「AmazonECSTaskExecutionRolePolicy」はAWSが管理しているポリシー。
+  ECSタスク実行IAMロールでの使用が想定されており、CloudWatch LogsやECRの操作権限を持っている。
+  以下のように、aws_iam_policyデータソースを使って参照できる。
+  [aws_iam_policy | Data Sources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy)
+*/
 
+# AmazonECSTaskExecutionRolePolicyの参照
+data "aws_iam_policy" "ecs_task_execution_role_policy" {
+  arn = "arn:aws::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 
 
 
