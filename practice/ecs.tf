@@ -175,8 +175,24 @@ data "aws_iam_policy" "ecs_task_execution_role_policy" {
   arn = "arn:aws::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+/*
+ポリシードキュメント
+  ポリシードキュメントを以下のように定義する。
+  [aws_iam_policy_document | Data Sources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document)
+*/
 
+# ECSタスク実行IAMロールのポリシードキュメントの定義
+data "aws_iam_policy_document" "ecs_task_execution" {
+  # source_json を使うと既存のポリシーを継承できる
+  # ここではAmazonECSTaskExecutionRolePolicyを継承し、 SSMパラメータストアとECSの統合 で必要な権限を先行して追加する。
+  source_json = data.aws_iam_policy.ecs_task_execution_role_policy
 
+  statement {
+    effect    = "Allow"
+    actions   = ["ssm:GetParameters", "kms:Decrypt"]
+    resources = ["*"]
+  }
+}
 
 
 
