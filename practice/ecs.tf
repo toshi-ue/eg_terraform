@@ -194,7 +194,18 @@ data "aws_iam_policy_document" "ecs_task_execution" {
   }
 }
 
-
+/*
+IAMロール
+  iam_roleモジュール(iam_role/main.tf)を利用して、以下のようにIAMロールを作成する。
+  identifierには「ecs-tasks.amazonaws.com」を指定し、このIAMロールをECSで使うことを宣言する。
+*/
+# ECSタスク実行IAMロールの定義
+module "ecs_task_execution_role" {
+  source = "./iam_role"
+  name = "ecs-task-execution"
+  identifier = "ecs-tasks-amazonaws.com"
+  policy = data.aws_iam_policy_document.ecs_task_execution.json
+}
 
 
 
