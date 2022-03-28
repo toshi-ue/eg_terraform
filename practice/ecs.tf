@@ -143,7 +143,22 @@ module "nginx_sg" {
   cidr_blocks = [aws_vpc.example.cidr_block]
 }
 
-
+/*
+Fargateにおけるロギング
+  Fargateではホストサーバーにログインできず、コンテナのログを直接確認できない。
+  そのためCloudWatch Logsと連携し、ログを記録できるようにする。
+CloudWatch Logs
+  CloudWatch Logsはあらゆるログを収集できるマネージドサービス。
+  AWSの各種サービスと統合されており、ECSもそのひとつ。
+  CloudWatch Logsは以下のように定義する。
+  [aws_cloudwatch_log_group | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group)
+*/
+# CloudWatch Logsの定義
+resource "aws_cloudwatch_log_group" "for_ecs" {
+  name = "/ecs/example"
+  # retention_in_daysで、ログの保持期間を指定する
+  retention_in_days = 180
+}
 
 
 
