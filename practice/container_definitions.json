@@ -3,7 +3,7 @@
     "name": "example",
     "image": "nginx:latest",
     "essential": true,
-    "LogConfiguration":{
+    "logConfiguration":{
       "logDriver": "awslogs",
       "options":{
         "awslogs-region": "ap-northeast-1",
