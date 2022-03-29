@@ -179,7 +179,7 @@ IAMポリシーデータソース
 
 # AmazonECSTaskExecutionRolePolicyの参照
 data "aws_iam_policy" "ecs_task_execution_role_policy" {
-  arn = "arn:aws::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 /*
@@ -192,7 +192,7 @@ data "aws_iam_policy" "ecs_task_execution_role_policy" {
 data "aws_iam_policy_document" "ecs_task_execution" {
   # source_json を使うと既存のポリシーを継承できる
   # ここではAmazonECSTaskExecutionRolePolicyを継承し、 SSMパラメータストアとECSの統合 で必要な権限を先行して追加する。
-  source_json = data.aws_iam_policy.ecs_task_execution_role_policy
+  source_json = data.aws_iam_policy.ecs_task_execution_role_policy.policy
 
   statement {
     effect    = "Allow"
@@ -210,7 +210,7 @@ IAMロール
 module "ecs_task_execution_role" {
   source     = "./iam_role"
   name       = "ecs-task-execution"
-  identifier = "ecs-tasks-amazonaws.com"
+  identifier = "ecs-tasks.amazonaws.com"
   policy     = data.aws_iam_policy_document.ecs_task_execution.json
 }
 
