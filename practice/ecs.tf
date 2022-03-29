@@ -59,6 +59,13 @@ resource "aws_ecs_task_definition" "example" {
     「container_definitions.json」ファイルにタスクで実行するコンテナを定義する。
   */
   container_definitions = file("./container_definitions.json")
+  /*
+    Dockerコンテナのロギング設定
+      logConfiguration.logDriver：awslogs を指定する
+      logConfiguration.options  ：aws_cloudwatch_log_groupの内容を設定していきます
+      logConfiguration.options.awslogs-group：aws_cloudwatch_log_groupのnameを指定します
+  */
+  execution_role_arn = module.ecs_task_execution_role.iam_role_arn
 }
 
 
@@ -201,10 +208,10 @@ IAMロール
 */
 # ECSタスク実行IAMロールの定義
 module "ecs_task_execution_role" {
-  source = "./iam_role"
-  name = "ecs-task-execution"
+  source     = "./iam_role"
+  name       = "ecs-task-execution"
   identifier = "ecs-tasks-amazonaws.com"
-  policy = data.aws_iam_policy_document.ecs_task_execution.json
+  policy     = data.aws_iam_policy_document.ecs_task_execution.json
 }
 
 
