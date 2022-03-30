@@ -29,3 +29,27 @@
         「ジョブAは必ずジョブBのあとに実行しなければならない」などはよくあります。単純に時間をずらして
         暗黙的な依存関係制御を行う場合もありますが、アンチパターンなので避けましょう。
  */
+
+/*
+ECS Scheduled Tasks
+  AWSにはジョブ管理システムのマネージドサービスはそんざいしない。
+  つまり、システムが大きくなるとジョブ管理システムの導入は避けられない。
+  しかし、ある程度の規模までであれば「ECS Scheduled Tasks」を使うことで、ジョブ管理システムの導入を先送りできる。
+  ECS Scheduled Tasksは、ECSのタスクを定期実行する。
+  実装は単純で、CloudWatchイベントからタスクを起動するだけ。
+  ECS Scheduled Tasks単体では、エラーハンドリングやリトライはアプリケーションレベルで実装する必要があり、依存関係制御もできない。
+  しかし、ジョブ管理サーバーを運用する必要がなく、cronよりもはるかにメンテナンス性が向上する。
+バッチ用CloudWatch Logs
+  複数のバッチで使いまわすこともできるが、バッチごとに作成したほうが運用は楽。
+*/
+# バッチ用CloudWatch Logsの定義
+resource "aws_cloudwatch_log_group" "for_ecs_scheduled_tasks" {
+  name              = "/ecs-scheduled-tasks/example"
+  retention_in_days = 180
+}
+
+
+
+
+/*
+*/
