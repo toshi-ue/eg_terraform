@@ -59,6 +59,28 @@ resource "aws_ecs_task_definition" "example_batch" {
   execution_role_arn       = module.ecs_task_execution_role.iam_role_arn
 }
 
+/*
+バッチ用コンテナ定義
+  コンテナ定義を「batch_container_definitions.json」というファイルに実装する。
+  時を刻むステキなバッチ。
+*/
+# バッチ用コンテナ定義
+# [
+#   {
+#     "name": "alpine",
+#     "image": "alpine:latest",
+#     "essential": true,
+#     "logConfiguration": {
+#       "logDriver": "awslogs",
+#       "options": {
+#         "awslogs-region": "ap-northeast-1",
+#         "awslogs-stream-prefix": "batch",
+#         "awslogs-group": "/ecs-scheduled-tasks/example"
+#       }
+#     },
+#     "command" : ["/bin/date"]
+#   }
+# ]
 
 
 /*
