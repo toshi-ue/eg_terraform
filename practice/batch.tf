@@ -101,4 +101,29 @@ data "aws_iam_policy" "ecs_events_role_policy" {
 }
 
 /*
+CloudWatchイベントルール
+  ジョブの実行スケジュールを定義するため、CloudWatchイベントルールを作成する。
+  以下のように実装する。
+  [aws_cloudwatch_event_rule | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule)
+*/
+# CloudWatchイベントルールの定義
+resource "aws_cloudwatch_event_rule" "example_batch" {
+  name                = "example-batch"
+  # descriptionでは日本語も使える。
+  # AWSマネジメントコンソールでの一覧性が向上するため、ひと目で理解できる内容にする
+  description         = "とても重要なバッチ処理です"
+  /*
+    スケジュール
+      schedule_expressionは、cron式とrate式をサポートしている。
+      [ルールのスケジュール式 - Amazon CloudWatch Events](https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/events/ScheduledEvents.html)
+      ・cron式 ： 「cron(0 8 * * ? *)」のように記述する。
+                    東京リージョンの場合でも、タイムゾーンはUTCになる。
+                    設定の最小精度は1分です。
+      ・rate式 ： 「rate(5 minutes)」のように記述する。
+                    単位は『1の場合は単数形、それ以外は複数形』で書く。
+                    「rate(1 hours)」や「rate(5 hour)」のように書くことはできないので注意。
+  */
+  schedule_expression = "crone(*/2 * * * ? *)"
+}
+/*
 */
