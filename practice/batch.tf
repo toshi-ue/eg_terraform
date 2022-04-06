@@ -108,10 +108,10 @@ CloudWatchイベントルール
 */
 # CloudWatchイベントルールの定義
 resource "aws_cloudwatch_event_rule" "example_batch" {
-  name                = "example-batch"
+  name = "example-batch"
   # descriptionでは日本語も使える。
   # AWSマネジメントコンソールでの一覧性が向上するため、ひと目で理解できる内容にする
-  description         = "とても重要なバッチ処理です"
+  description = "とても重要なバッチ処理です"
   /*
     スケジュール
       schedule_expressionは、cron式とrate式をサポートしている。
@@ -125,5 +125,46 @@ resource "aws_cloudwatch_event_rule" "example_batch" {
   */
   schedule_expression = "crone(*/2 * * * ? *)"
 }
+
 /*
+CloudWatchイベントターゲット
+  以下のようにCloudWatchイベントターゲットで、実行対象のジョブを定義する。
+  ECS Scheduled Tasksの場合は、タスク定義をターゲットに設定する。
+  # [aws_cloudwatch_event_target | Resources | hashicorp/aws | Terraform Registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target)
 */
+# CloudWatchイベントターゲットの定義
+resource "aws_cloudwatch_event_target" "example_batch" {
+  target_id = "example-batch"
+  /*
+    ルール
+      ruleに"aws_cloudwatch_event_rule" "example_batch"で作成したCloudWatchイベントルールを設定する。
+      これで定期的に、CloudWatchイベントターゲットが実行される。
+  */
+  rule = aws_cloudwatch_event_rule.example_batch.name
+  /*
+    IAMロール
+      role_arnに"ecs_events_role"で作成したCloudWatchイベントIAMロールを設定する。
+  */
+  role_arn = module.ecs_events_role.iam_role_arn
+  arn      = aws_ecs_cluster.example.arn
+
+  /*
+    ターゲット
+      ターゲットをarnで設定する。
+      ECS Scheduled TasksではECSクラスタを指定する。
+      さらにecs_targetで、タスクの実行時の設定を行う。
+      ecs_targetには、ロードバランサーやヘルスチェックの設定はないが、
+      それ以外はECSサービスの実装とほぼ同じ。
+  */
+  ecs_target {
+    launch_type         = "FARGATE"
+    task_count          = 1
+    platform_version    = "1.3.0"
+    task_definition_arn = aws_ecs_task_definition.example_batch.arn
+
+    network_configuration {
+      assign_public_ip = "false"
+      subnets          = [aws_subnet.private_0.id]
+    }
+  }
+}
