@@ -123,7 +123,7 @@ resource "aws_cloudwatch_event_rule" "example_batch" {
                     単位は『1の場合は単数形、それ以外は複数形』で書く。
                     「rate(1 hours)」や「rate(5 hour)」のように書くことはできないので注意。
   */
-  schedule_expression = "crone(*/2 * * * ? *)"
+  schedule_expression = "cron(*/2 * * * ? *)"
 }
 
 /*
@@ -168,3 +168,7 @@ resource "aws_cloudwatch_event_target" "example_batch" {
     }
   }
 }
+
+# バッチの動作確認方法
+# terraform applyを実行してから以下を実行
+# aws logs filter-log-events --log-group-name /ecs-scheduled-tasks/example
