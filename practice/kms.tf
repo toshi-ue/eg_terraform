@@ -23,9 +23,11 @@ resource "aws_kms_key" "example" {
   enable_key_rotation = true
   /*
     is_enabledをfalseにすると、カスタマーマスターキーを無効化できる。
+    deletion_window_in_days を無効化するにはここでfalseにする
     無効化後にあらためて有効化することもできる。
   */
-  is_enabled = true
+  # is_enabled = true
+  is_enabled = false
   /*
   削除待機期間
     deletion_window_in_daysで、カスタマーマスターキーの削除待機期間を設定する。
@@ -35,5 +37,5 @@ resource "aws_kms_key" "example" {
     削除したカスタマーマスターキーで暗号化したデータは、いかなる手段でも復号できなくなる。
     そのため、通常は無効化を選択すべき。
   */
-  deletion_window_in_days = 30
+  # deletion_window_in_days = 30
 }
