@@ -39,3 +39,16 @@ resource "aws_kms_key" "example" {
   */
   # deletion_window_in_days = 30
 }
+
+/*
+エイリアス
+  カスタマーマスターキーにはそれぞれUUIDが割り当てられるが、人間には分かりづらい。
+  そこでエイリアスを設定し、どういう用途で使われているか識別しやすくする。
+*/
+# エイリアスの定義
+resource "aws_kms_alias" "example" {
+  name = "alias/example"
+  # エイリアスで設定する名前には「alias/」というプレフィックスが必要。
+  # やや分かりづらい制約なので、注意。
+  target_key_id = aws_kms_key.example.key_id
+}
